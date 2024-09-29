@@ -1,7 +1,4 @@
-
-from robot.variables import is_scalar_var, is_list_var
-
-class BaseRuntime(object):
+class BaseRuntime:
     
     START = 'start'
     RUNNING = 'running'
@@ -17,7 +14,7 @@ class BaseRuntime(object):
                 
     def __getattr__(self, name):
         if name.startswith('__'):
-            raise AttributeError, 'Internal Attribute %s.'%name
+            raise AttributeError('Internal Attribute %s.'%name)
         return self.attrs.get(name, "")
 
 class KeywordRuntime(BaseRuntime):
@@ -48,4 +45,3 @@ class TestCaseRuntime(BaseRuntime):
 
     def __str__(self):
         return "test:%s" % self.name
-      

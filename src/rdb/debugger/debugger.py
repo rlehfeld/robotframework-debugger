@@ -1,10 +1,9 @@
-
 import threading
-from breakpoints import * 
-from runtime import *
+from .breakpoints import *
+from .runtime import *
 import logging
 
-class Debuger(object):
+class Debugger:
     """
         
     """
@@ -23,7 +22,7 @@ class Debuger(object):
             self.add_breakpoint(bp)
             self.go_on()
         else:
-            raise RuntimeError, "the program have not paused!"
+            raise RuntimeError("the program have not paused!")
     
     def go_into(self):
         self.go_steps(1)
@@ -35,7 +34,7 @@ class Debuger(object):
             self.add_breakpoint(bp)
             self.go_on()
         else:
-            raise RuntimeError, "the program have not paused!"
+            raise RuntimeError("the program have not paused!")
         
     def go_run(self):
         """run current keyword. paused when the keyword is called.
@@ -49,7 +48,7 @@ class Debuger(object):
             else:
                 pass
         else:
-            raise RuntimeError, "the program have not paused!"
+            raise RuntimeError("the program have not paused!")
     
     def go_return(self):
         """ """
@@ -60,7 +59,7 @@ class Debuger(object):
                 self.add_breakpoint(bp)
             self.go_on()
         else:
-            raise RuntimeError, "the program have not paused!"
+            raise RuntimeError("the program have not paused!")
     
     def go_pause(self):
         """schedule to pause the program."""
@@ -69,7 +68,7 @@ class Debuger(object):
             self.add_breakpoint(SemaphoreBreakPoint('', 1))
         else:
             self.logger.warning("the program is already paused!")
-            raise RuntimeError, "the program is already paused!"
+            raise RuntimeError("the program is already paused!")
                 
     def add_breakpoint(self, bp):
         self.break_points.insert(0, bp)
@@ -86,7 +85,7 @@ class Debuger(object):
             
             self.check_break_points()
             func.state = BaseRuntime.RUNNING
-        except BaseException, e:
+        except BaseException as e:
             self.logger.exception(e)
             raise
             
@@ -95,7 +94,7 @@ class Debuger(object):
             if self.call_stack[-1] != func:
                 err_msg = "Not matched the call stack. %s != %s" % (self.call_stack[-1], func)
                 self.logger.error(err_msg)
-                raise RuntimeError, err_msg
+                raise RuntimeError(err_msg)
             
             func.state = BaseRuntime.END
             
@@ -103,7 +102,7 @@ class Debuger(object):
             self.check_break_points()
             self.call_stack.pop()
             func.state = BaseRuntime.DONE
-        except BaseException, e:
+        except BaseException as e:
             self.logger.exception(e)
             raise        
     
@@ -192,5 +191,3 @@ class Listeners(Listener):
 
     def remove_listener(self, l):
         self.listeners.remove(l)
-
-        

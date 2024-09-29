@@ -2,12 +2,12 @@ from __future__ import with_statement
 from contextlib import closing
 import os, sys
 
-from debugger.debugger import Debugger, Listener
-from debugger.breakpoints import KeywordBreakPoint, CallStackBreakPoint
+from .debugger.debugger import Debugger, Listener
+from .debugger.breakpoints import KeywordBreakPoint, CallStackBreakPoint
 from threading import Thread
 import logging, types
 
-class DebugSetting(object):
+class DebugSetting:
     def __init__(self, path=None):
         try:
             import pkg_resources        
@@ -51,10 +51,10 @@ class DebugThread(Thread):
         logger = logging.getLogger("rbt.int")
         try:
             self.interface.start(self.args)
-        except BaseException, e:
+        except BaseException as e:
             logger.exception(e)
         
-class TelentMonitorProxy(object):
+class TelentMonitorProxy:
     def __init__(self, rdb):
         self.rdb = rdb
         self.logger = logging.getLogger("tel.monitor")
@@ -63,10 +63,10 @@ class TelentMonitorProxy(object):
         for m in self.rdb.telnet_monitor_list:
             try:
                 m.write(c)
-            except Exception, e:
+            except Exception as e:
                 self.logger.warning("Exception:%s in %s" % (e, m))
                 
-class FileMonitor(object):
+class FileMonitor:
     def __init__(self, path):
         self.output = open(path,'w')
     
@@ -96,7 +96,7 @@ class FileCaseStatus(Listener):
         self.output.flush()
         self.output.close()
 
-class RobotDebugger(object):
+class RobotDebugger:
     def __init__(self, settings):
         self.bp_id = 0
         self.debugCtx = Debugger()
@@ -179,7 +179,7 @@ class RobotDebugger(object):
                 cls_int = getattr(module, handler)
                 self.inteface_list.append(cls_int(self))
                 DebugThread(self.inteface_list[-1], self.settings).start()
-        except Exception, e:
+        except Exception as e:
             self.logger and self.logger.exception(e)
             raise
             
@@ -200,7 +200,7 @@ class RobotDebugger(object):
                 l = FileCaseStatus(path)
                 self.debug_listener.append(l)
                 self.debugCtx.add_listener(l)
-            except Exception, e:
+            except Exception as e:
                 self.logger.exception(e)
                 
     def close_telnet_monitor(self):
@@ -208,7 +208,7 @@ class RobotDebugger(object):
             if hasattr(e, 'close'):
                 try:
                     e.close()
-                except Exception, e:
+                except Exception as e:
                     self.logger.error("exception from monitor '%s'." % e)
                     self.logger.exception(e)
 
@@ -217,7 +217,7 @@ class RobotDebugger(object):
             if hasattr(e, 'close'):
                 try:
                     e.close()
-                except Exception, e:
+                except Exception as e:
                     self.logger.error("exception from listener '%s'." % e)
                     self.logger.exception(e)
 

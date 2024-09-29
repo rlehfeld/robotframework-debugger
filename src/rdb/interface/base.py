@@ -1,10 +1,10 @@
 import logging
 
-class BaseDebugInterface(object):
+class BaseDebugInterface:
     
-    def __init__(self, debuger):
-        self.robotDebuger = debuger
-        self.debugCtx = debuger.debugCtx
+    def __init__(self, debugger):
+        self.robotDebugger = debugger
+        self.debugCtx = debugger.debugCtx
         self.logger = logging.getLogger("rbt.int")
         self.bp_id = 0
     
@@ -21,11 +21,11 @@ class BaseDebugInterface(object):
     def go_on(self): self.debugCtx.go_on()
     def go_return(self): self.debugCtx.go_return()
     def go_pause(self): return self.debugCtx.go_pause()
-    def add_breakpoint(self, bp): self.robotDebuger.add_breakpoint(bp)
-    def watch_variable(self, name): return self.robotDebuger.watch_variable(name)
-    def remove_variable(self, name): return self.robotDebuger.remove_variable(name)
+    def add_breakpoint(self, bp): self.robotDebugger.add_breakpoint(bp)
+    def watch_variable(self, name): return self.robotDebugger.watch_variable(name)
+    def remove_variable(self, name): return self.robotDebugger.remove_variable(name)
     
-    def run_keyword(self, name, *args): return self.robotDebuger.run_keyword(name, *args)
+    def run_keyword(self, name, *args): return self.robotDebugger.run_keyword(name, *args)
     
     def update_variable(self, name, value):
         from robot.running import NAMESPACES
@@ -50,7 +50,7 @@ class BaseDebugInterface(object):
         return val_list
     
     @property
-    def watching_variable(self):return self.robotDebuger.watching_variable
+    def watching_variable(self):return self.robotDebugger.watching_variable
     @property
     def callstack(self):
         """Return a runtime list"""
@@ -84,7 +84,7 @@ class BaseDebugInterface(object):
 
     def add_telnet_monitor(self, monitor):
         """this is IPAMml special feature."""
-        self.robotDebuger.add_telnet_monitor(monitor)
+        self.robotDebugger.add_telnet_monitor(monitor)
         
     def add_debug_listener(self, l):
         self.debugCtx.add_listener(l)

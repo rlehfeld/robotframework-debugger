@@ -1,2 +1,1 @@
-
-from interface import WebDebuger
+from interface import WebDebugger

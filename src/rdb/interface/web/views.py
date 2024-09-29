@@ -1,5 +1,5 @@
 
-class BaseView(object):
+class BaseView:
     def __init__(self, obj):
         self.obj = obj
         self.css_class = ""

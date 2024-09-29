@@ -1,4 +1,4 @@
-robotframework-debuger
+robotframework-debugger
 ======================
 
 A debugger for robot-framework with support for single step, breakpoints, 

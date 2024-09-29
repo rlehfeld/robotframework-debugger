@@ -1,8 +1,8 @@
-from RobotDebugger import RobotDebugger
-from debugger.runtime import KeywordRuntime, TestCaseRuntime, TestSuiteRuntime
+from .RobotDebugger import RobotDebugger
+from .debugger.runtime import KeywordRuntime, TestCaseRuntime, TestSuiteRuntime
 import logging, sys
 
-class Listener(object):
+class Listener:
     ROBOT_LISTENER_API_VERSION = 2
     
     def __init__(self, cfg='debug.rdb', *bps):

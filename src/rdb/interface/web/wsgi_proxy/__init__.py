@@ -38,7 +38,7 @@ def reconstruct_url(environ):
     environ['reconstructed_url'] = url
     return url
 
-class WSGIProxyApplication(object):
+class WSGIProxyApplication:
     """Application to handle requests that need to be proxied"""
         
     ConnectionClass = HTTPConnection

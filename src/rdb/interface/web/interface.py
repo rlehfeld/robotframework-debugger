@@ -6,7 +6,7 @@ from time import time
 from datetime import datetime
 from urlparse import urlparse
 from robot.serializing import Template, Namespace
-from rdb.debuger.breakpoints import KeywordBreakPoint
+from rdb.debugger.breakpoints import KeywordBreakPoint
 import logging, re, random, urllib2, socket
 from views import BreakPointView, CallStackView
 from robot.running import NAMESPACES
@@ -34,7 +34,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     
     def process(self):
         logger = self.logger 
-        self.rbt_debuger = self.server.robot_debuger
+        self.rbt_debugger = self.server.robot_debugger
         
         #output = "xx:%s,\n%s" % (self.server.debug_interface, self.path)
         url = urlparse(self.path)
@@ -42,8 +42,8 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         params = self.params = self.__parse_param(url.query)
         if self.check_session(params):
             logger.debug("command:%s,%s" % (command, str(params)))
-            if command and hasattr(self.rbt_debuger, command):
-                command = getattr(self.rbt_debuger, command)
+            if command and hasattr(self.rbt_debugger, command):
+                command = getattr(self.rbt_debugger, command)
             elif command and hasattr(self, command):
                 command = getattr(self, command)
             if callable(command):
@@ -72,9 +72,9 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         import templates as t
         
         reload(t)
-        DEBUGER_TEMPLATE = t.DEBUGER_TEMPLATE
+        DEBUGGER_TEMPLATE = t.DEBUGGER_TEMPLATE
         
-        rdb = self.rbt_debuger
+        rdb = self.rbt_debugger
         
         #break porints
         break_points = [ BreakPointView(e) for e in rdb.breakpoints 
@@ -145,7 +145,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                               command=command,
                               command_result=status,
                               msg=msg,
-                              title="Robot framework web debuger",
+                              title="Robot framework web debugger",
                               robot_status=robot_status,
                               cur_attrs=cur_attrs,
                               cur_varibles=cur_varibles,
@@ -154,7 +154,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                               kw = self.params.get("kw", '')
                               )
         
-        return Template(template=DEBUGER_TEMPLATE).generate(namespace)
+        return Template(template=DEBUGGER_TEMPLATE).generate(namespace)
     
     def execute(self, command, params):        
         if command.func_defaults:
@@ -195,7 +195,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 kw_param[str(name)] = args[name]
         return (param, kw_param)
     
-class TelnetMonitor(object):
+class TelnetMonitor:
     def __init__(self, size=16 * 1024):
         self.html_output = ''
         self.buffer_size = size
@@ -215,7 +215,7 @@ class TelnetMonitor(object):
     def buffer(self): return self.html_output
     
 
-class WebDebuger(BaseDebugInterface):
+class WebDebugger(BaseDebugInterface):
     def start(self, cfg):
         self.cfg = cfg
         if cfg.WEB_PROXY == 'Y':
@@ -226,7 +226,7 @@ class WebDebuger(BaseDebugInterface):
             server_address = (cfg.WEB_BIND, int(cfg.WEB_PORT))
             
         httpd = BaseHTTPServer.HTTPServer(server_address, WebHandler)
-        httpd.robot_debuger = self
+        httpd.robot_debugger = self
         httpd.sid = ""
         self.telnetMonitor = TelnetMonitor()
         self.add_telnet_monitor(self.telnetMonitor)
@@ -253,7 +253,7 @@ class WebDebuger(BaseDebugInterface):
             self.unregister_rdb_proxy()
         
     def run_keyword(self, kw):
-        return super(WebDebuger, self).run_keyword(*kw.replace('+', ' ').split(','))
+        return super(WebDebugger, self).run_keyword(*kw.replace('+', ' ').split(','))
         
     def __str__(self):
         return "Web interface %s:%s" % (self.cfg.WEB_BIND,
@@ -323,5 +323,4 @@ if "__main__" == __name__:
     x = lambda:0
     x.WEB_PORT = 8000
     print "start server..."
-    WebDebuger().start(x)
-    
+    WebDebugger().start(x)

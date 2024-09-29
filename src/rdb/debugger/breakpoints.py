@@ -1,10 +1,10 @@
 
-from runtime import BaseRuntime as RT
-from runtime import KeywordRuntime
+from .runtime import BaseRuntime as RT
+from .runtime import KeywordRuntime
 import re, fnmatch
 import logging
 
-class BreakPoint(object):
+class BreakPoint:
     def __init__(self, name):
         self.name = name
         self.active = True
@@ -116,5 +116,3 @@ class SemaphoreBreakPoint(BreakPoint):
 
     def __str__(self):
         return "Semaphore break:%s, semaphore=%s" % (self.name, self.semaphore)
-
-    

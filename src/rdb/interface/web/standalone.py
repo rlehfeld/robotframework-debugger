@@ -12,7 +12,7 @@ import re, sys, os, logging, urllib2, traceback, socket
 import autoreload
 from wsgi_proxy import WSGIProxyApplication
 
-class HttpServletApp(object):
+class HttpServletApp:
     def __init__(self, environ, start_response):
         """ URL? """
         self.environ = environ
@@ -88,7 +88,7 @@ class HttpServletApp(object):
     def __iter__(self):
         return iter(self.output)
     
-class ManageActions(object):
+class ManageActions:
     def start_rdb(self, host, port):
         rdb = SERVER_CONTEXT.rdb
         rdb.server_name = host
@@ -117,7 +117,7 @@ class ManageActions(object):
                 "rdb_status:%s" % SERVER_CONTEXT.rdb.status,
                 ]
 
-class StaticWebApp(object):
+class StaticWebApp:
     def __init__(self, environ, start_response):
         """ URL? """
         self.http_url = environ['PATH_INFO']
@@ -127,7 +127,7 @@ class StaticWebApp(object):
     def __iter__(self):
         return iter([])
     
-class ApplicationContext(object):
+class ApplicationContext:
     """A global standalone object, it's keep a web server running context."""
     
     def __init__(self, root_path='', app_setting=None):
@@ -140,7 +140,7 @@ class ApplicationContext(object):
     def rdb(self): return self.active_rdb
         
     
-class RDBInfo(object):
+class RDBInfo:
     """A RDB interface infomation."""
     STATUS = ['running', 'closed', ]
     def __init__(self, host='127.0.0.1', port=0):

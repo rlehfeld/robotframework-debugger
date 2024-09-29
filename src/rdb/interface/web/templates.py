@@ -298,7 +298,7 @@ LISTENER = """
 </table> 
 """
 
-DEBUGER_TEMPLATE = """
+DEBUGGER_TEMPLATE = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -331,7 +331,7 @@ DEBUGER_TEMPLATE = """
 <title>${title}</title>
 </head>
 <body onclick='stop_refresh()' onload='schedule_reload()'>
-    <h1>Robotframework web debuger...</h1>
+    <h1>Robotframework web debugger...</h1>
     <div style="margin-left:100px;">
     <div class='buttons'>
         <a href="go_on?sid=${session}" class='positive'>Run</a>
