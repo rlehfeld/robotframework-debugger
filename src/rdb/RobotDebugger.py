@@ -2,8 +2,8 @@ from __future__ import with_statement
 from contextlib import closing
 import os, sys
 
-from debuger.debuger import Debuger, Listener
-from debuger.breakpoints import KeywordBreakPoint, CallStackBreakPoint
+from debugger.debugger import Debugger, Listener
+from debugger.breakpoints import KeywordBreakPoint, CallStackBreakPoint
 from threading import Thread
 import logging, types
 
@@ -96,10 +96,10 @@ class FileCaseStatus(Listener):
         self.output.flush()
         self.output.close()
 
-class RobotDebuger(object):
+class RobotDebugger(object):
     def __init__(self, settings):
         self.bp_id = 0
-        self.debugCtx = Debuger()
+        self.debugCtx = Debugger()
         self.settings = DebugSetting()
         self.logger = None
         self.watched_variable = []
@@ -115,7 +115,7 @@ class RobotDebuger(object):
         if self.settings.LOGGING_FILE:
             self.__init_sys_logging()
             self.logger = logging.getLogger("rdb.c")
-            self.logger.info("starting robot debuger...")
+            self.logger.info("starting robot debugger...")
             
         for e in self.settings.BPS_LIST:
             self.add_breakpoint(e)
@@ -230,8 +230,7 @@ class RobotDebuger(object):
         for e in self.inteface_list:
             self.logger.info("shutdown interface. %s" % str(e))
             e.close()
-        self.logger.info("robot debuger is closed.")
+        self.logger.info("robot debugger is closed.")
 
     def sys_exit(self, err_code=255):
         self._exit_code = err_code
-    

@@ -199,7 +199,7 @@ def main(config_file='', ):
                             filemode='a')
     
     def start_wsgi_server():
-        from rdb.RobotDebuger import DebugSetting
+        from rdb.RobotDebugger import DebugSetting
         app_settings = DebugSetting()
         work_root = os.getcwd()
 

@@ -1,5 +1,5 @@
-from RobotDebuger import RobotDebuger
-from debuger.runtime import KeywordRuntime, TestCaseRuntime, TestSuiteRuntime
+from RobotDebugger import RobotDebugger
+from debugger.runtime import KeywordRuntime, TestCaseRuntime, TestSuiteRuntime
 import logging, sys
 
 class Listener(object):
@@ -12,13 +12,13 @@ class Listener(object):
             sys.__stderr__.write("Robot 2.1 is required for RDB(robot debug).\n")
             sys.exit(0)
         
-        self.debuger = RobotDebuger(cfg)
-        self.debuger.run()
+        self.debugger = RobotDebugger(cfg)
+        self.debugger.run()
         self.call_stack = []
-        self.debugCtx = self.debuger.debugCtx
+        self.debugCtx = self.debugger.debugCtx
         self.logger = logging.getLogger("rbt.lis")
         for e in bps:
-            self.debuger.add_breakpoint(e)
+            self.debugger.add_breakpoint(e)
         
     def start_suite(self, name, attrs):
         self.logger.debug("start_suite:%s, attr:%s" % (name, attrs))
@@ -58,4 +58,4 @@ class Listener(object):
     
     def close(self):
         self.logger.debug("close..................")
-        self.debuger.close()
+        self.debugger.close()
