@@ -1,20 +1,22 @@
-from rdb.interface import BaseDebugInterface
-
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from time import time
-from datetime import datetime
-from urllib.parse import urlparse
-from robot.serializing import Template, Namespace
-from rdb.debugger.breakpoints import KeywordBreakPoint
 import logging
+import sys
 import re
 import random
-from urllib.parse import unquote
-from urllib.request import urlopen
 import socket
+import os
+import subprocess
 import importlib
+from time import time
+from datetime import datetime
+from urllib.parse import urlparse, unquote
+from urllib.request import urlopen
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from robot.serializing import Template, Namespace
+from rdb.interface import BaseDebugInterface
+from rdb.debugger.breakpoints import KeywordBreakPoint
 from .views import BreakPointView, CallStackView
 from . import templates
+from . import standalone
 
 
 class WebHandler(BaseHTTPRequestHandler):
@@ -70,7 +72,7 @@ class WebHandler(BaseHTTPRequestHandler):
         self.server.sid = str(random.random())
         return result
 
-    def log_message(self, format, *args):
+    def log_message(self, format, *args):  # pylint: disable=W0622
         self.logger.debug(format % args)
 
     def response_views(self, command, status, msg):
@@ -104,8 +106,11 @@ class WebHandler(BaseHTTPRequestHandler):
         attr_order = ['doc', 'longname', 'starttime', 'endtime', 'elapsetime',
                       'tags', 'status', 'message', 'statistics']
 
-        def index_attr(x):
-            return x not in attr_order and 999 or attr_order.index(x)
+        def index_attr(z):
+            try:
+                return attr_order.index(z)
+            except ValueError:
+                return 999
 
         def cmp(a, b):
             return (a > b) - (a < b)
@@ -113,28 +118,32 @@ class WebHandler(BaseHTTPRequestHandler):
         keys.sort(lambda x, y: cmp(index_attr(x), index_attr(y)))
         cur_attrs = []
         for e in keys:
-            def o():
+            def a():
                 return 0
-            o.name = e
-            o.value = listener_attrs[e]
-            cur_attrs.append(o)
+            a.name = e
+            a.value = listener_attrs[e]
+            cur_attrs.append(a)
+            del a
 
-        varibles = listener_attrs.get('args', [])
-        cur_varibles = []
-        args_varibles = [e for e in varibles if e[0] in ['$', '@']]
-        args_varibles += rdb.watching_variable
-        for name, value in rdb.variable_value(args_varibles):
-            def o():
+        variables = listener_attrs.get('args', [])
+        cur_variables = []
+        args_variables = [e for e in variables if e[0] in ['$', '@']]
+        args_variables += rdb.watching_variable
+        for name, value in rdb.variable_value(args_variables):
+            def v():
                 return 0
-            o.name = name
+            v.name = name
             if value is None:
-                o.value = "<STRIKE>Non-existing variable</STRIKE>"
+                v.value = "<STRIKE>Non-existing variable</STRIKE>"
             else:
                 value = str(value)
-                o.value = re.sub(r"([^ <>]{50})",
-                                 lambda r: "<span>%s</span> " % r.group(0),
-                                 value)
-            cur_varibles.append(o)
+                v.value = re.sub(
+                    r"([^ <>]{50})",
+                    lambda r: "<span>%s</span> " % r.group(0),
+                    value
+                )
+            cur_variables.append(v)
+            del v
 
         def robot_status():
             return 0
@@ -150,7 +159,7 @@ class WebHandler(BaseHTTPRequestHandler):
             robot_status.name = "Running....."
             robot_status.css_class = "running"
 
-        refresh_interval = rdb.active_breakpoint and "120" or "1"
+        refresh_interval = "120" if rdb.active_breakpoint else "1"
 
         namespace = Namespace(
             call_stack=call_stack,
@@ -162,7 +171,7 @@ class WebHandler(BaseHTTPRequestHandler):
             title="Robot framework web debugger",
             robot_status=robot_status,
             cur_attrs=cur_attrs,
-            cur_varibles=cur_varibles,
+            cur_variables=cur_variables,
             refresh_interval=refresh_interval,
             session=self.server.sid,
             kw=self.params.get("kw", '')
@@ -238,7 +247,8 @@ class TelnetMonitor:
         self.html_output = self.html_output[-self.buffer_size:]
 
     @property
-    def buffer(self): return self.html_output
+    def buffer(self):
+        return self.html_output
 
 
 class WebDebugger(BaseDebugInterface):
@@ -268,7 +278,6 @@ class WebDebugger(BaseDebugInterface):
             self.register_rdb_proxy()
 
         if cfg.WEB_PORT == '0':
-            import sys
             sys.__stderr__.write("=" * 80 + "\n")
             sys.__stderr__.write(
                 "Open 'http://%s:%s' in browser to monitor robot status.\n" % (
@@ -286,7 +295,7 @@ class WebDebugger(BaseDebugInterface):
             self.unregister_rdb_proxy()
 
     def run_keyword(self, kw):
-        return super(WebDebugger, self).run_keyword(
+        return super().run_keyword(
             *kw.replace('+', ' ').split(',')
         )
 
@@ -298,9 +307,6 @@ class WebDebugger(BaseDebugInterface):
         self.proxy_alived = True
         if self.alived_proxy():
             return
-        import standalone
-        import os
-        import subprocess
         script = re.sub(".pyc$", ".py", standalone.__file__)
         work_root = os.getcwd()
         validate_script = "python %s %s" % (script, self.cfg.source_file)
@@ -313,7 +319,7 @@ class WebDebugger(BaseDebugInterface):
                 self.proxy_address
             )
         )
-        for e in range(3):
+        for _ in range(3):
             if self.alived_proxy():
                 self.logger.info("start RDB proxy ok!")
                 return
@@ -332,8 +338,7 @@ class WebDebugger(BaseDebugInterface):
                 if data == 'OK':
                     self.logger.info("register proxy ok")
                     return
-                else:
-                    self.logger.error("%s->%s" % (proxy_url, data))
+                self.logger.error("%s->%s" % (proxy_url, data))
         except BaseException as e:
             self.proxy_alived = False
             self.logger.exception(e)
@@ -350,8 +355,7 @@ class WebDebugger(BaseDebugInterface):
                 if data == 'OK':
                     self.logger.info("unregister proxy ok")
                     return
-                else:
-                    self.logger.error("%s->%s" % (proxy_url, data))
+                self.logger.error("%s->%s" % (proxy_url, data))
         except BaseException as e:
             self.proxy_alived = False
             self.logger.exception(e)

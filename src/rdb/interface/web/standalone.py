@@ -268,7 +268,7 @@ def wsgi_global_app(environ, start_response):
 
 
 class RDBProxyWSGIHandler(WSGIRequestHandler):
-    def log_message(self, format, *args):
+    def log_message(self, format, *args):  # pylint: disable=W0622
         logging.getLogger("rdb.proxy").debug(format % args)
 
 

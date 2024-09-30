@@ -244,7 +244,7 @@ VARIABLES = """
   <th>Value</th>
   <th>Remove</th>
 </tr>
-<!-- FOR ${var} IN ${cur_varibles} -->
+<!-- FOR ${var} IN ${cur_variables} -->
 <tr>
   <td>${var.name}</td>
   <td>${var.value}</td>
@@ -268,7 +268,7 @@ VARIABLES = """
       <form action="/update_variable?sid=${session}" method='GET'>
           <input type='hidden' name="sid" value="${session}"/>
           <select name="name">
-<!-- FOR ${var} IN ${cur_varibles} -->
+<!-- FOR ${var} IN ${cur_variables} -->
             <option value="${var.name}">${var.name}</option>
 <!-- END FOR -->
           </select>
