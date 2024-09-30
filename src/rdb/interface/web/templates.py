@@ -1,4 +1,3 @@
-
 _BUTTON_STYLE = """
 .buttons a, .buttons button{
     display:block;
@@ -102,12 +101,12 @@ button.regular, .buttons a.regular{
 
 _STYLE = """
 <style media="all" type="text/css">
-  /* Generic styles */ 
+  /* Generic styles */
   body {
     font-family: sans-serif;
     font-size: 0.8em;
     color: black;
-    padding: 6px; 
+    padding: 6px;
     background: white;
   }
   h2 {
@@ -151,7 +150,7 @@ div.mml_output{
 
 %(BUTTON_STYLE)s
 </style>
-""" % {'BUTTON_STYLE':_BUTTON_STYLE}
+""" % {'BUTTON_STYLE': _BUTTON_STYLE}
 
 CALL_STACK = """
 <table class='app'>
@@ -169,7 +168,7 @@ CALL_STACK = """
   <td>${rt.state}</td>
 </tr>
 <!-- END FOR -->
-</table> 
+</table>
 """
 
 BREAK_POINTS = """
@@ -181,7 +180,7 @@ BREAK_POINTS = """
 </tr>
 <!-- FOR ${bp} IN ${break_points} -->
 <tr class='${bp.css_class}'>
-  <td><a href="/update_breakpoint?sid=${session}&name=${bp.name}">${bp.active}</a></td>
+  <td><a href="/update_breakpoint?sid=${session}&name=${bp.name}">${bp.active}</a></td><!-- # noqa, E501 -->
   <td>${bp.kw_name}</td>
   <td></td>
 </tr>
@@ -197,18 +196,18 @@ BREAK_POINTS = """
   </td>
   <td>&nbsp;</td>
 </tr>
-</table> 
+</table>
 """
 
 MESSAGES = """
-    <div class='${robot_status.css_class}'><b>Robot Status:</b> 
+    <div class='${robot_status.css_class}'><b>Robot Status:</b>
         ${robot_status.name}
     </div>
     <div><b>Command:</b> ${command}</div>
     <div><b>Result:</b> ${command_result}</div>
-    <div><b>Message:</b> 
+    <div><b>Message:</b>
         <div id='status_msg' style='display:inline;'>${msg}</div>
-    </div>    
+    </div>
     <!-- IF '${active_bp}' != 'None' -->
     <div style='display:none;'>
     class:${active_bp.__class__.__name__},
@@ -235,7 +234,7 @@ CONSOLE = """
   <td><input type='submit' value="Run" /></td>
 </tr>
 </table>
-</form> 
+</form>
 """
 
 VARIABLES = """
@@ -249,7 +248,7 @@ VARIABLES = """
 <tr>
   <td>${var.name}</td>
   <td>${var.value}</td>
-  <td><a href="/remove_variable?sid=${session}&name=${var.name}">Remove</a></td>
+  <td><a href="/remove_variable?sid=${session}&name=${var.name}">Remove</a></td><!-- # noqa, E501 -->
 </tr>
 <!-- END FOR -->
 <tr>
@@ -280,7 +279,7 @@ VARIABLES = """
   </td>
   <td>&nbsp;</td>
 </tr>
-</table> 
+</table>
 """
 
 LISTENER = """
@@ -295,11 +294,11 @@ LISTENER = """
   <td>${attr.value}</td>
 </tr>
 <!-- END FOR -->
-</table> 
+</table>
 """
 
 DEBUGGER_TEMPLATE = """
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><!-- # noqa, E501 -->
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -307,14 +306,14 @@ DEBUGGER_TEMPLATE = """
 %(STYLE)s
 <script type="text/javascript">
     //stop to refresh page if have any click in page.
-    //Have not use 'meta http-equiv="refresh"', because it can't canceled by javascript.   
+    //Have not use 'meta http-equiv="refresh"', because it can't canceled by javascript.
     var reload_event;
     var interval = ${refresh_interval} * 1000;
     function stop_refresh(){
         if(reload_event){
             window.clearInterval(reload_event);
             //refresh page if no action in 30 seconds.
-            reload_event = window.setInterval(xxxx, 30 * 1000);            
+            reload_event = window.setInterval(xxxx, 30 * 1000);
             if(interval < 10 * 1000){
                 var msg = document.getElementById('status_msg');
                 msg.innerHTML = "<span style='color:#ff33cc;'><b>Robot is running, The page is stopped to refresh. Please click 'refresh' to check robot status.</b></span>";
@@ -352,7 +351,7 @@ DEBUGGER_TEMPLATE = """
                 <td width="40%%">
                     <b>Break Points</b>
                     %(BREAK_POINTS)s
-                </td>            
+                </td>
             </tr>
             <tr>
                 <td>
@@ -367,19 +366,24 @@ DEBUGGER_TEMPLATE = """
                         <b>Console</b>
                         %(CONSOLE)s
                     </div>
-                </td>            
+                </td>
             </tr>
             <tr>
                 <td colspan='2'>
                     <b>Listener attributes</b>
                     %(LISTENER)s
                 </td>
-            </tr>            
+            </tr>
         </table>
     </div>
 </body>
 </html>
-""" % {'CALL_STACK': CALL_STACK, 'BREAK_POINTS': BREAK_POINTS, 
-       'MESSAGES':MESSAGES, 'VARIABLES':VARIABLES,
-       'STYLE':_STYLE, 'LISTENER':LISTENER,
-       'CONSOLE': CONSOLE}
+""" % {
+    'CALL_STACK': CALL_STACK,
+    'BREAK_POINTS': BREAK_POINTS,
+    'MESSAGES': MESSAGES,
+    'VARIABLES': VARIABLES,
+    'STYLE': _STYLE,
+    'LISTENER': LISTENER,
+    'CONSOLE': CONSOLE,
+}

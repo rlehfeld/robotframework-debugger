@@ -5,30 +5,33 @@
 # Portions copyright (c) 2004, CherryPy Team (team@cherrypy.org)
 # All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
 #
 #     * Redistributions of source code must retain the above copyright notice,
 #       this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above copyright notice,
-#       this list of conditions and the following disclaimer in the documentation
-#       and/or other materials provided with the distribution.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
 #     * Neither the name of the CherryPy Team nor the names of its contributors
 #       may be used to endorse or promote products derived from this software
 #       without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, time
+import os
+import sys
+import time
 
 try:
     import thread
@@ -38,7 +41,7 @@ except ImportError:
 # This import does nothing, but it's necessary to avoid some race conditions
 # in the threading module. See http://code.djangoproject.com/ticket/2330 .
 try:
-    import threading
+    import threading  # noqa, F401
 except ImportError:
     pass
 
@@ -48,13 +51,16 @@ RUN_RELOADER = True
 _mtimes = {}
 _win = (sys.platform == "win32")
 
+
 def code_changed():
     global _mtimes, _win
-    for filename in filter(lambda v: v, map(lambda m: getattr(m, "__file__", None), sys.modules.values())):
+    for filename in filter(lambda v: v, map(
+            lambda m: getattr(m, "__file__", None),
+            sys.modules.values())):
         if filename.endswith(".pyc") or filename.endswith(".pyo"):
             filename = filename[:-1]
         if not os.path.exists(filename):
-            continue # File might be in an egg, so it can't be reloaded.
+            continue  # File might be in an egg, so it can't be reloaded.
         stat = os.stat(filename)
         mtime = stat.st_mtime
         if _win:
@@ -67,11 +73,13 @@ def code_changed():
             return True
     return False
 
+
 def reloader_thread():
     while RUN_RELOADER:
         if code_changed():
-            sys.exit(3) # force reload
+            sys.exit(3)  # force reload
         time.sleep(1)
+
 
 def restart_with_reloader():
     while True:
@@ -83,6 +91,7 @@ def restart_with_reloader():
         exit_code = os.spawnve(os.P_WAIT, sys.executable, args, new_environ)
         if exit_code != 3:
             return exit_code
+
 
 def python_reloader(main_func, args, kwargs):
     if os.environ.get("RUN_MAIN") == "true":
@@ -96,6 +105,7 @@ def python_reloader(main_func, args, kwargs):
             sys.exit(restart_with_reloader())
         except KeyboardInterrupt:
             pass
+
 
 def jython_reloader(main_func, args, kwargs):
     from _systemrestart import SystemRestart
@@ -116,4 +126,3 @@ def main(main_func, args=None, kwargs=None):
     else:
         reloader = python_reloader
     reloader(main_func, args, kwargs)
-

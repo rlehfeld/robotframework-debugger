@@ -1,1 +1,1 @@
-from interface import WebDebugger
+from interface import WebDebugger  # noqa, F401
