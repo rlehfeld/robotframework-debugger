@@ -1,21 +1,23 @@
 from rdb.interface import BaseDebugInterface
 
-import BaseHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from time import time
 from datetime import datetime
-from urlparse import urlparse
+from urllib.parse import urlparse
 from robot.serializing import Template, Namespace
 from rdb.debugger.breakpoints import KeywordBreakPoint
 import logging
 import re
 import random
-import urllib2
+from urllib.parse import unquote
+from urllib.request import urlopen
 import socket
 import importlib
-from views import BreakPointView, CallStackView
+from .views import BreakPointView, CallStackView
+from . import templates
 
 
-class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class WebHandler(BaseHTTPRequestHandler):
     def do_GET(self, ):  # noqa, N802
         self.logger = logger = logging.getLogger("rdb.web")
         try:
@@ -72,10 +74,9 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.logger.debug(format % args)
 
     def response_views(self, command, status, msg):
-        import templates as t
-        importlib.reload(t)
+        importlib.reload(templates)
 
-        debugger_template = t.DEBUGGER_TEMPLATE
+        debugger_template = templates.DEBUGGER_TEMPLATE
 
         rdb = self.rbt_debugger
 
@@ -188,7 +189,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 self.__parse_args(params, reqiured_args, options_args)
             )
             result = command(*args, **kw_args)
-        except Exception as e:
+        except BaseException as e:
             self.logger.exception(e)
             return ('ERR', str(e))
 
@@ -200,7 +201,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if "=" not in e:
                 continue
             k, v = e.split("=", 1)
-            p[k] = urllib2.unquote(v)
+            p[k] = unquote(v)
         return p
 
     def __parse_args(self, args, reqiured_args, options_args):
@@ -250,7 +251,7 @@ class WebDebugger(BaseDebugInterface):
         else:
             server_address = (cfg.WEB_BIND, int(cfg.WEB_PORT))
 
-        httpd = BaseHTTPServer.HTTPServer(server_address, WebHandler)
+        httpd = HTTPServer(server_address, WebHandler)
         httpd.robot_debugger = self
         httpd.sid = ""
         self.telnetMonitor = TelnetMonitor()
@@ -326,12 +327,13 @@ class WebDebugger(BaseDebugInterface):
         if not self.proxy_alived:
             return
         try:
-            data = urllib2.urlopen(proxy_url).read()
-            if data == 'OK':
-                self.logger.info("register proxy ok")
-                return
-            else:
-                self.logger.error("%s->%s" % (proxy_url, data))
+            with urlopen(proxy_url) as response:
+                data = response.read()
+                if data == 'OK':
+                    self.logger.info("register proxy ok")
+                    return
+                else:
+                    self.logger.error("%s->%s" % (proxy_url, data))
         except BaseException as e:
             self.proxy_alived = False
             self.logger.exception(e)
@@ -343,12 +345,13 @@ class WebDebugger(BaseDebugInterface):
         if not self.proxy_alived:
             return
         try:
-            data = urllib2.urlopen(proxy_url).read()
-            if data == 'OK':
-                self.logger.info("unregister proxy ok")
-                return
-            else:
-                self.logger.error("%s->%s" % (proxy_url, data))
+            with urlopen(proxy_url) as response:
+                data = response.read()
+                if data == 'OK':
+                    self.logger.info("unregister proxy ok")
+                    return
+                else:
+                    self.logger.error("%s->%s" % (proxy_url, data))
         except BaseException as e:
             self.proxy_alived = False
             self.logger.exception(e)
@@ -357,10 +360,11 @@ class WebDebugger(BaseDebugInterface):
         proxy_url = "http://%s:%s/alive" % self.proxy_address
         try:
             socket.setdefaulttimeout(3)
-            data = urllib2.urlopen(proxy_url).read()
-            if data.strip() == 'OK':
-                return True
-        except Exception:
+            with urlopen(proxy_url) as response:
+                data = response.read()
+                if data.strip() == 'OK':
+                    return True
+        except BaseException:
             pass
         return False
 
