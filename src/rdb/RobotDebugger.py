@@ -52,7 +52,7 @@ class DebugSetting:
 
 class DebugThread(Thread):
     def __init__(self, interface, args):
-        Thread.__init__(self)
+        super().__init__()
         self.setDaemon(True)
         self.interface = interface
         self.args = args

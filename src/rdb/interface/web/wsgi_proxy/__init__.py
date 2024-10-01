@@ -1,7 +1,7 @@
-from httplib import HTTPConnection
-from urlparse import urlparse
 import copy
 import logging
+from httplib import HTTPConnection
+from urlparse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ _hoppish = {
 
 
 def is_hop_by_hop(header):
-    return _hoppish.has_key(header.lower())
+    return header.lower() in _hoppish
 
 
 def reconstruct_url(environ):
@@ -105,7 +105,7 @@ class WSGIProxyApplication:
             headers['content-type'] = environ['CONTENT_TYPE']
 
         # Add our host if one isn't defined
-        if not headers.has_key('host'):
+        if 'host' not in headers:
             headers['host'] = environ['SERVER_NAME']
 
         # Make the remote request
@@ -146,7 +146,7 @@ class WSGIProxyApplication:
             if is_hop_by_hop(header[0]):
                 headers.remove(header)
 
-        start_response(response.status.__str__()+' '+response.reason, headers)
+        start_response(f'{response.status!s} {response.reason}', headers)
         return [response.read(response.length)]
 
     def __call__(self, environ, start_response):

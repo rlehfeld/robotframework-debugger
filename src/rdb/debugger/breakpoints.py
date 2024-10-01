@@ -1,7 +1,7 @@
-from .runtime import BaseRuntime as RT  # noqa, N814
-from .runtime import KeywordRuntime
 import re
 import fnmatch
+from .runtime import BaseRuntime as RT  # noqa, N814
+from .runtime import KeywordRuntime
 
 
 class BreakPoint:
@@ -10,7 +10,7 @@ class BreakPoint:
         self.active = True
         self.expired = False
 
-    def matched_context(self, stack):
+    def matched_context(self, stack):  # pylint: disable=W0613
         return False
 
     def __str__(self):
@@ -19,7 +19,7 @@ class BreakPoint:
 
 class KeywordBreakPoint(BreakPoint):
     def __init__(self, name, kw_name, state=RT.START):
-        BreakPoint.__init__(self, name)
+        super().__init__(name)
         self.kw_name = kw_name
         self.state = state
         self.pattern = '^' + kw_name.replace('*', '.*') + '$'
@@ -39,9 +39,9 @@ class KeywordBreakPoint(BreakPoint):
         return "break:%s, pattern=%s" % (self.name, self.kw_name)
 
 
-class CallStackBreakPoint(KeywordBreakPoint):
+class CallStackBreakPoint(BreakPoint):
     def __init__(self, name, stack, state=RT.START):
-        BreakPoint.__init__(self, name)
+        super().__init__(name)
         self.break_stack = stack
         self.state = state
         self.kw_name = ";".join(stack)
@@ -69,7 +69,7 @@ class CallStackBreakPoint(KeywordBreakPoint):
 
 class RuntimeBreakPoint(BreakPoint):
     def __init__(self, name, rt, state=RT.START):
-        BreakPoint.__init__(self, name)
+        super().__init__(name)
         self.rt = rt
         self.state = state
         self.rt_done = False
@@ -86,12 +86,11 @@ class RuntimeBreakPoint(BreakPoint):
         if stack[-1] == self.rt:
             if stack[-1].state == self.state:
                 return True
-            elif self.state == RT.DONE and stack[-1].state == RT.END:
-                """it's active at next step"""
+            if self.state == RT.DONE and stack[-1].state == RT.END:
+                # it's active at next step
                 self.rt_done = True
                 return False
-        else:
-            return False
+        return False
 
     def __str__(self):
         xx = str(self.rt)
@@ -103,7 +102,7 @@ class RuntimeBreakPoint(BreakPoint):
 
 class SemaphoreBreakPoint(BreakPoint):
     def __init__(self, name, init_count=1):
-        BreakPoint.__init__(self, name)
+        super().__init__(name)
         self.semaphore = init_count
 
     def matched_context(self, stack):

@@ -1,7 +1,7 @@
+import logging
 import threading
 from .breakpoints import SemaphoreBreakPoint, RuntimeBreakPoint
 from .runtime import BaseRuntime
-import logging
 
 
 class Debugger:
@@ -53,7 +53,6 @@ class Debugger:
             raise RuntimeError("the program have not paused!")
 
     def go_return(self):
-        """ """
         self.logger.debug("go_return...")
         if self.paused():
             if len(self.call_stack) > 1:
@@ -131,7 +130,7 @@ class Debugger:
         if len(matched_bps) > 0:
             self.pause(matched_bps[0])
 
-    def pause(self, breakpoint):
+    def pause(self, breakpoint):  # pylint: disable=W0622
         self.active_break_point = breakpoint
 
         self.listener.pause(breakpoint)
@@ -168,7 +167,7 @@ class Listener:
     def __init__(self):
         pass
 
-    def pause(self, breakpoint):
+    def pause(self, breakpoint):  # pylint: disable=W0622
         pass
 
     def go_on(self):
@@ -185,7 +184,7 @@ class Listeners(Listener):
     def __init__(self):
         self.listeners = []
 
-    def pause(self, breakpoint):
+    def pause(self, breakpoint):  # pylint: disable=W0622
         for listener in self.listeners:
             listener.pause(breakpoint)
 

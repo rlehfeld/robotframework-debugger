@@ -1,12 +1,12 @@
+import logging
 from .RobotDebugger import RobotDebugger
 from .debugger.runtime import KeywordRuntime, TestCaseRuntime, TestSuiteRuntime
-import logging
 
 
 class Listener:
     ROBOT_LISTENER_API_VERSION = 2
 
-    def __init__(self, cfg='debug.rdb', *bps):
+    def __init__(self, *bps, cfg='debug.rdb'):
         self.debugger = RobotDebugger(cfg)
         self.debugger.run()
         self.call_stack = []
@@ -42,7 +42,7 @@ class Listener:
         if name.startswith("RDB."):
             return
         if "." in name:
-            lib, name = name.split(".", 1)
+            _, name = name.split(".", 1)
         self.call_stack.append(KeywordRuntime(name, attrs))
         self.debugCtx.start_function(self.call_stack[-1])
 

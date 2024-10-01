@@ -4,7 +4,7 @@ class BaseRuntime:
     END = 'end'
     DONE = 'done'
 
-    def __init__(self, object, type, attrs):
+    def __init__(self, object, type, attrs):  # pylint: disable=W0622
         self.object = object
         self.result = None
         self.state = self.START
@@ -18,8 +18,8 @@ class BaseRuntime:
 
 
 class KeywordRuntime(BaseRuntime):
-    def __init__(self, object, attrs):
-        BaseRuntime.__init__(self, object, 'kw', attrs)
+    def __init__(self, object, attrs):  # pylint: disable=W0622
+        super().__init__(object, 'kw', attrs)
         self.name = object
         self.keyword = object
 
@@ -28,8 +28,8 @@ class KeywordRuntime(BaseRuntime):
 
 
 class TestSuiteRuntime(BaseRuntime):
-    def __init__(self, object, attrs):
-        BaseRuntime.__init__(self, object, 'suite', attrs)
+    def __init__(self, object, attrs):  # pylint: disable=W0622
+        super().__init__(object, 'suite', attrs)
         self.name = object
 
     def __str__(self):
@@ -37,8 +37,8 @@ class TestSuiteRuntime(BaseRuntime):
 
 
 class TestCaseRuntime(BaseRuntime):
-    def __init__(self, object, attrs):
-        BaseRuntime.__init__(self, object, 'case', attrs)
+    def __init__(self, object, attrs):  # pylint: disable=W0622
+        super().__init__(object, 'case', attrs)
         self.name = object
 
     def __str__(self):

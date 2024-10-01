@@ -105,7 +105,7 @@ class BaseDebugInterface:
         for e in self.debugCtx.break_points:
             if match_kw and hasattr(e, 'kw_name') and e.kw_name == name:
                 return e
-            elif not match_kw and e.name == name:
+            if not match_kw and e.name == name:
                 return e
         return None
 
@@ -124,7 +124,7 @@ class Listener:
     def __init__(self):
         pass
 
-    def pause(self, breakpoint):
+    def pause(self, breakpoint):  # pylint: disable=W0622
         pass
 
     def go_on(self):

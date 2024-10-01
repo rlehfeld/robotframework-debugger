@@ -1,1 +1,1 @@
-from base import BaseDebugInterface  # noqa, F401
+from .base import BaseDebugInterface  # noqa, F401
