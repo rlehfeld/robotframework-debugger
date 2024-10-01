@@ -7,16 +7,18 @@ The RDB will switch over to stand alone mode to notify user the robot is
 stopped friendly.
 """
 
-from wsgiref.simple_server import WSGIRequestHandler
 import re
 import sys
 import os
 import logging
-import urllib2
 import traceback
 import socket
-from wsgi_proxy import WSGIProxyApplication
-
+from urllib.parse import unquote
+from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
+from robot.serializing import Template
+from rdb.RobotDebugger import DebugSetting
+from .wsgi_proxy import WSGIProxyApplication
+from . import templates
 
 SERVER_CONTEXT = None
 
@@ -63,7 +65,6 @@ class HttpServletApp:
         self.render_output(start_response, result)
 
     def render_output(self, start_response, result):
-        import types
         if self.params.get("DEBUG", '') == 'Y':
             env_list = (
                 "%s=%s\n" % (k, v) for k, v in self.environ.iteritems()
@@ -80,11 +81,9 @@ class HttpServletApp:
                     ),
                 ]
             )
-        elif isinstance(result, types.TupleType):
+        elif isinstance(result, tuple):
             template_name, param = result[:2]
-            import templates as t
-            from robot.serializing import Template
-            template = getattr(t, template_name)
+            template = getattr(templates, template_name)
             self.output.append(Template(template=template).generate(param))
             start_response(
                 "200 OK",
@@ -113,7 +112,7 @@ class HttpServletApp:
             if "=" not in e:
                 continue
             k, v = e.split("=", 1)
-            p[k] = urllib2.unquote(v)
+            p[k] = unquote(v)
         return p
 
     def __parse_args(self, args, reqiured_args, options_args):
@@ -193,7 +192,8 @@ class ApplicationContext:
         self.proxy_exception = None
 
     @property
-    def rdb(self): return self.active_rdb
+    def rdb(self):
+        return self.active_rdb
 
 
 class RDBInfo:
@@ -216,9 +216,9 @@ def wsgi_global_app(environ, start_response):
 
     if re.search(r"\.(?:html|css|js|jpg|gif|png|ico)$", path_info, re.I):
         return StaticWebApp(environ, start_response)
-    elif script in ['manage', ]:
+    if script in ['manage', ]:
         return HttpServletApp(environ, start_response)
-    elif script in ['alive', ]:
+    if script in ['alive', ]:
         start_response(
             "200 OK",
             [
@@ -229,7 +229,7 @@ def wsgi_global_app(environ, start_response):
             ]
         )
         return ['OK', ]
-    elif SERVER_CONTEXT.rdb.status == 'running':
+    if SERVER_CONTEXT.rdb.status == 'running':
         socket.setdefaulttimeout(5)
         rdb = SERVER_CONTEXT.rdb
         environ['HTTP_HOST'] = "%s:%s" % (rdb.server_name, rdb.server_port)
@@ -253,18 +253,17 @@ def wsgi_global_app(environ, start_response):
             SERVER_CONTEXT.rdb.status = 'error'
             logger.exception(e)
             return []
-    else:
-        # status_code = 302
-        start_response(
-            "302 Found",
-            [
-                (
-                    'Location',
-                    '/manage/status'
-                )
-            ]
-        )
-        return []
+    # status_code = 302
+    start_response(
+        "302 Found",
+        [
+            (
+                'Location',
+                '/manage/status'
+            )
+        ]
+    )
+    return []
 
 
 class RDBProxyWSGIHandler(WSGIRequestHandler):
@@ -273,8 +272,6 @@ class RDBProxyWSGIHandler(WSGIRequestHandler):
 
 
 def main(config_file='', ):
-    import logging
-
     def init_sys_logging(cfg):
         level = getattr(logging, cfg.LOGGING_LEVEL)
         logging.basicConfig(
@@ -287,7 +284,6 @@ def main(config_file='', ):
 
     def start_wsgi_server():
         global SERVER_CONTEXT
-        from rdb.RobotDebugger import DebugSetting
         app_settings = DebugSetting()
         work_root = os.getcwd()
 
@@ -302,7 +298,6 @@ def main(config_file='', ):
         try:
             SERVER_CONTEXT = ApplicationContext(work_root, app_settings)
 
-            from wsgiref.simple_server import WSGIServer
             server_address = (
                 app_settings.WEB_BIND,
                 int(app_settings.WEB_PORT)
